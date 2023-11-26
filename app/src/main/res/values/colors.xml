@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="colorPrimary">#0592C7</color>
+    <color name="colorPrimaryDark">#026084</color>
+    <color name="colorAccent">#333333</color>
+    <color name="drawerBackground">#FFFFFF</color>
+    <color name="drawerItemColor">#FFFFFF</color>
+    <color name="drawerItemIconColor">#252525</color>
+
 </resources>

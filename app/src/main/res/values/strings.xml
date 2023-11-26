@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Inventory Manager</string>
+    <string name="logo">Inventory Manager Logo</string>
+    <string name="welcome_text">Welcome to Inventory Manager\n</string>
 </resources>

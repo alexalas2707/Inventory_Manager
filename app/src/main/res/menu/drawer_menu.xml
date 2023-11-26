@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@drawable/ic_home"
+            android:title="Dashboard" />
+        <item
+            android:id="@+id/nav_inventory_list"
+            android:icon="@drawable/ic_list"
+            android:title="Inventory List" />
+        <item
+            android:id="@+id/nav_add_inventory"
+            android:icon="@drawable/ic_add"
+            android:title="Add Inventory" />
+        <item
+            android:id="@+id/nav_product_categories"
+            android:icon="@drawable/ic_categories"
+            android:title="Product Categories" />
+        <item
+            android:id="@+id/nav_barcode_scanning"
+            android:icon="@drawable/ic_scan"
+            android:title="Barcode Scanning" />
+        <item
+            android:id="@+id/nav_export_inventory"
+            android:icon="@drawable/ic_export"
+            android:title="Export Inventory" />
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_settings"
+            android:title="Settings" />
+    </menu>
