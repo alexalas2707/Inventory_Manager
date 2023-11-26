@@ -3,6 +3,7 @@ package com.example.inventorymanager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,6 +17,104 @@ public class DashboardActivity  extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private DatabaseHelper databaseHelper;
+
+
+    //Handling Fragments Transactions
+
+    private void setupDashboardButtons() {
+
+        //----------------BarcodeScan---------------------------
+        FrameLayout barcodeScanButton = findViewById(R.id.frameLayoutScan);
+        barcodeScanButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new BarcodeScanningFragment())
+                        .commit();
+            }
+        });
+
+        //---------------AddInventory--------------------------
+        FrameLayout addInventoryButton = findViewById(R.id.frameLayoutAdd);
+        addInventoryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new AddInventoryFragment())
+                        .commit();
+            }
+        });
+
+        //----------------InventoryList-----------------------------
+        FrameLayout inventoryListButton = findViewById(R.id.frameLayoutProductList);
+        inventoryListButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new InventoryListFragment())
+                        .commit();
+            }
+        });
+
+        //----------------Alerts-------------------------------------
+        FrameLayout alertsButton = findViewById(R.id.frameLayoutAlerts);
+        alertsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new AlertsFragment())
+                        .commit();
+            }
+        });
+
+        //---------------------ProductCategories-------------------------
+        FrameLayout productCategoriesButton = findViewById(R.id.frameLayoutProductCategories);
+        productCategoriesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new ProductCategoriesFragment())
+                        .commit();
+            }
+        });
+
+        //----------------------Export------------------------------------
+        FrameLayout exportButton = findViewById(R.id.frameLayoutExport);
+        exportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new ExportInventoryFragment())
+                        .commit();
+            }
+        });
+
+        //--------------------------Settings------------------------------
+        FrameLayout settingsButton = findViewById(R.id.frameLayoutSettings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new SettingsFragment())
+                        .commit();
+            }
+        });
+
+        //-----------------------------Help----------------------------------
+        FrameLayout helpButton = findViewById(R.id.frameLayoutHelp);
+        helpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new HelpFragment())
+                        .commit();
+            }
+        });
+
+
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,6 +124,15 @@ public class DashboardActivity  extends AppCompatActivity {
         databaseHelper = new DatabaseHelper(this);
         ImageView menuIcon = findViewById(R.id.menuIcon);
 
+        // Setup the initial default fragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new InventoryListFragment())
+                .commit();
+
+        setupDashboardButtons();
+
+
+        //------------Getting user name from SharedPreferences---------------------------
         SharedPreferences prefs = getSharedPreferences("YourAppPrefs", MODE_PRIVATE);
         String loggedInUsername = prefs.getString("username", null);
 
