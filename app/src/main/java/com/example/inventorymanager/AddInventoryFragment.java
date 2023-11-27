@@ -15,19 +15,25 @@ import androidx.fragment.app.Fragment;
 
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import android.Manifest;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 public class AddInventoryFragment extends Fragment {
 
     private static final int PERMISSIONS_REQUEST = 100;
     private static final int IMAGE_PICK_REQUEST = 101;
     private static final int IMAGE_CAPTURE_REQUEST = 102;
+
 
     private void checkPermissions() {
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
@@ -75,9 +81,16 @@ public class AddInventoryFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_add_inventory, container, false);
+
+
+        // Initialize BarcodeScannerHelper with the current fragment
+        BarcodeScannerHelper barcodeScannerHelper = new BarcodeScannerHelper(this);
+
+        EditText editTextBarcodeNumber = view.findViewById(R.id.editTextBarcodeNumber);
 
         // Set up the Add Image button
         Button addImageButton = view.findViewById(R.id.buttonAddImage);
@@ -88,7 +101,20 @@ public class AddInventoryFragment extends Fragment {
             }
         });
 
-        // ... rest of your onCreateView code ...
+        editTextBarcodeNumber.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (event.getRawX() >= (editTextBarcodeNumber.getRight() - editTextBarcodeNumber.getCompoundDrawables()[2].getBounds().width())) {
+                        // Start scanning
+                        barcodeScannerHelper.startBarcodeScan(); // corrected method name
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+
 
         return view;
     }
@@ -107,6 +133,16 @@ public class AddInventoryFragment extends Fragment {
                 Bundle extras = data.getExtras();
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
                 imageViewProduct.setImageBitmap(imageBitmap);
+            }
+        }
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            if (result.getContents() == null) {
+                Toast.makeText(getActivity(), "Cancelled", Toast.LENGTH_LONG).show();
+            } else {
+                // Put the scan result into the EditText
+                EditText editTextBarcodeNumber = getView().findViewById(R.id.editTextBarcodeNumber);
+                editTextBarcodeNumber.setText(result.getContents());
             }
         }
     }

@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@drawable/bg_solid">
 
 
     <ImageView
@@ -28,7 +29,23 @@
         android:inputType="text"
         android:background="@drawable/app_input"
         android:layout_marginTop="5dp"
-        android:padding="5dp"/>
+        android:padding="5dp"
+        android:textColorHint="@color/app_grey"
+        android:textColor="@color/black"/>
+
+    <EditText
+        android:id="@+id/editTextBarcodeNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Product Serial Number"
+        android:drawableRight="@drawable/ic_camera_15"
+        android:inputType="text"
+        android:background="@drawable/app_input"
+        android:layout_marginTop="5dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp"
+        android:textColorHint="@color/app_grey"
+        android:textColor="@color/black"/>
 
     <EditText
         android:id="@+id/editTextProductBrand"
@@ -38,7 +55,9 @@
         android:inputType="text"
         android:background="@drawable/app_input"
         android:layout_marginTop="5dp"
-        android:padding="5dp"/>
+        android:padding="5dp"
+        android:textColorHint="@color/app_grey"
+        android:textColor="@color/black"/>
 
     <EditText
         android:id="@+id/editTextQuantity"
@@ -48,7 +67,9 @@
         android:inputType="number"
         android:background="@drawable/app_input"
         android:layout_marginTop="5dp"
-        android:padding="5dp"/>
+        android:padding="5dp"
+        android:textColorHint="@color/app_grey"
+        android:textColor="@color/black"/>
 
     <EditText
         android:id="@+id/editTextLocation"
@@ -58,7 +79,9 @@
         android:inputType="text"
         android:background="@drawable/app_input"
         android:layout_marginTop="5dp"
-        android:padding="5dp"/>
+        android:padding="5dp"
+        android:textColorHint="@color/app_grey"
+        android:textColor="@color/black"/>
 
     <EditText
         android:id="@+id/editTextTags"
@@ -68,7 +91,9 @@
         android:inputType="text"
         android:background="@drawable/app_input"
         android:layout_marginTop="5dp"
-        android:padding="5dp"/>
+        android:padding="5dp"
+        android:textColorHint="@color/app_grey"
+        android:textColor="@color/black"/>
 
 
 
