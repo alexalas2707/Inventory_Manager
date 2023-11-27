@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
             finish(); // call finish() so the user can't navigate back to this activity
         }
 
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

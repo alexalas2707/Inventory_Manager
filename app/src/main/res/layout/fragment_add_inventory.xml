@@ -1,18 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
+
+    <ImageView
+        android:id="@+id/imageViewProduct"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop" />
+
+    <Button
+        android:id="@+id/buttonAddImage"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="144dp"
-        android:text="Add Screen"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="Add Image"
+        android:backgroundTint="@color/app_blue"
+        android:textColor="@color/white"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <EditText
+        android:id="@+id/editTextProductName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Product Name"
+        android:inputType="text"
+        android:background="@drawable/app_input"
+        android:layout_marginTop="5dp"
+        android:padding="5dp"/>
+
+    <EditText
+        android:id="@+id/editTextProductBrand"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Brand"
+        android:inputType="text"
+        android:background="@drawable/app_input"
+        android:layout_marginTop="5dp"
+        android:padding="5dp"/>
+
+    <EditText
+        android:id="@+id/editTextQuantity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Quantity"
+        android:inputType="number"
+        android:background="@drawable/app_input"
+        android:layout_marginTop="5dp"
+        android:padding="5dp"/>
+
+    <EditText
+        android:id="@+id/editTextLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Warehouse Location"
+        android:inputType="text"
+        android:background="@drawable/app_input"
+        android:layout_marginTop="5dp"
+        android:padding="5dp"/>
+
+    <EditText
+        android:id="@+id/editTextTags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tags (comma-separated)"
+        android:inputType="text"
+        android:background="@drawable/app_input"
+        android:layout_marginTop="5dp"
+        android:padding="5dp"/>
+
+
+
+    <Button
+        android:id="@+id/buttonSaveProduct"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save Product"
+        android:backgroundTint="@color/app_blue"
+        android:textColor="@color/white"
+        android:layout_marginTop="20dp"/>
+
+</LinearLayout>

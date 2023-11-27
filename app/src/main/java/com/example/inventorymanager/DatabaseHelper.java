@@ -5,18 +5,26 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
+    // Database Info
     // Database Info
     private static final String DATABASE_NAME = "inventoryManagerDatabase";
     private static final int DATABASE_VERSION = 1;
 
     // Table Names
     private static final String TABLE_USERS = "user_data";
+    private static final String TABLE_PRODUCTS = "products";
 
     // User Table Columns
     private static final String KEY_USER_ID = "id";
@@ -24,6 +32,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_USER_LASTNAME = "lastname";
     private static final String KEY_USER_USERNAME = "username";
     private static final String KEY_USER_PASSWORD = "password";
+
+    // Product Table Columns
+    private static final String KEY_PRODUCT_BARCODE = "barcode";
+    private static final String KEY_PRODUCT_NAME = "name";
+    private static final String KEY_PRODUCT_BRAND = "brand";
+    private static final String KEY_PRODUCT_QUANTITY = "quantity_in_stock";
+    private static final String KEY_PRODUCT_LOCATION = "warehouse_location";
+    private static final String KEY_PRODUCT_TAGS = "tags";
+    private static final String KEY_PRODUCT_IMAGE = "image"; // For storing image as BLOB
+
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -36,11 +54,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 KEY_USER_ID + " INTEGER PRIMARY KEY," + // Define a primary key
                 KEY_USER_NAME + " TEXT," +
                 KEY_USER_LASTNAME + " TEXT," +
-                KEY_USER_USERNAME + " TEXT," +
+                KEY_USER_USERNAME + " TEXT UNIQUE," + // Ensure the username is unique
                 KEY_USER_PASSWORD + " TEXT" + // Store a hashed password, not plain text
                 ")";
 
+        String CREATE_PRODUCTS_TABLE = "CREATE TABLE " + TABLE_PRODUCTS +
+                "(" +
+                KEY_PRODUCT_BARCODE + " TEXT PRIMARY KEY," + // Barcode as the primary key
+                KEY_PRODUCT_NAME + " TEXT," +
+                KEY_PRODUCT_BRAND + " TEXT," +
+                KEY_PRODUCT_QUANTITY + " INTEGER," +
+                KEY_PRODUCT_LOCATION + " TEXT," +
+                KEY_PRODUCT_TAGS + " TEXT," +
+                KEY_PRODUCT_IMAGE + " BLOB" + // Image stored as binary data
+                ")";
+
         db.execSQL(CREATE_USERS_TABLE);
+        db.execSQL(CREATE_PRODUCTS_TABLE);
     }
 
     @Override
@@ -53,73 +83,68 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Insert a post into the database
+    // Insert a user into the database
     public void addUser(User user) {
-        // Create and/or open the database for writing
-        SQLiteDatabase db = getWritableDatabase();
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_USER_NAME, user.getName());
+        values.put(KEY_USER_LASTNAME, user.getLastname());
+        values.put(KEY_USER_USERNAME, user.getUsername());
+        values.put(KEY_USER_PASSWORD, hashPassword(user.getPassword())); // Hash the password
 
-        db.beginTransaction();
-        try {
-            ContentValues values = new ContentValues();
-            values.put(KEY_USER_NAME, user.getName());
-            values.put(KEY_USER_LASTNAME, user.getLastname());
-            values.put(KEY_USER_USERNAME, user.getUsername());
-            values.put(KEY_USER_PASSWORD, user.getPassword()); // Make sure to hash the password
-
-            // Notice how we haven't specified the primary key. SQLite auto increments the primary key column.
-            db.insertOrThrow(TABLE_USERS, null, values);
-            db.setTransactionSuccessful();
-        } catch (Exception e) {
-            Log.d("DatabaseHelper", "Error while trying to add user to database", e);
-        } finally {
-            db.endTransaction();
+        long id = db.insert(TABLE_USERS, null, values);
+        if (id == -1) {
+            Log.d("DatabaseHelper", "Error while trying to add user to database");
         }
     }
+
+
+    //--------------------------------------user related operations-------------------------------
+    // Check if a user exists
+    public boolean checkUserExist(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_USERS, new String[]{KEY_USER_ID},
+                KEY_USER_USERNAME + " = ?", new String[]{username},
+                null, null, null);
+        int numberOfRows = cursor.getCount();
+        cursor.close();
+        return numberOfRows > 0;
+    }
+
+    // Check user credentials
+    public boolean checkUserCredentials(String username, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_USERS, new String[]{KEY_USER_PASSWORD},
+                KEY_USER_USERNAME + " = ?", new String[]{username},
+                null, null, null);
+
+        boolean passwordMatch = false;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int passwordColumnIndex = cursor.getColumnIndex(KEY_USER_PASSWORD);
+                if (passwordColumnIndex != -1) {
+                    String storedPassword = cursor.getString(passwordColumnIndex);
+                    passwordMatch = BCrypt.checkpw(password, storedPassword);
+                }
+            }
+            cursor.close();
+        }
+        return passwordMatch;
+    }
+
 
     // Update a user's password in the database
     public int updateUserPassword(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
-
         ContentValues values = new ContentValues();
-        values.put(KEY_USER_PASSWORD, user.getPassword()); // hash the password
+        values.put(KEY_USER_PASSWORD, hashPassword(user.getPassword())); // Hash the password
 
         // Updating password for user with that username
         return db.update(TABLE_USERS, values, KEY_USER_USERNAME + " = ?",
-                new String[]{String.valueOf(user.getUsername())});
+                new String[]{user.getUsername()});
     }
 
-    // This method will be used in main activity to check if users exist
-    public boolean checkUserExist() {
-        SQLiteDatabase db = getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_USERS;
-        Cursor cursor = db.rawQuery(query, null);
-        boolean hasObjects = cursor.moveToFirst();
-        cursor.close();
-        return hasObjects;
-    }
-
-    public boolean checkUserCredentials(String username, String password) {
-        SQLiteDatabase db = getReadableDatabase();
-        String query = "SELECT " + KEY_USER_PASSWORD + " FROM " + TABLE_USERS + " WHERE " + KEY_USER_USERNAME + " = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{username});
-
-        if (cursor != null && cursor.moveToFirst()) {
-            int passwordColumnIndex = cursor.getColumnIndex(KEY_USER_PASSWORD);
-            if (passwordColumnIndex != -1) {
-                String storedPassword = cursor.getString(passwordColumnIndex);
-                cursor.close();
-                // Compare the stored hashed password with the hashed version of the input password
-                return BCrypt.checkpw(password, storedPassword);
-            }
-        }
-
-
-        if (cursor != null) {
-            cursor.close();
-        }
-        return false;
-    }
-
-    // method to get username
+    // Get user by username
     public User getUserByUsername(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
         User user = null;
@@ -162,7 +187,144 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+    // This method will be used in main activity to check if users exist
+    // This method will be used to check if any users exist
+    public boolean checkUserExist() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT 1 FROM " + TABLE_USERS;
+        Cursor cursor = db.rawQuery(query, null);
+        boolean hasUsers = cursor.moveToFirst();
+        cursor.close();
+        return hasUsers;
+    }
 
+
+    public Product getProductByBarcode(String barcode) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Product product = null;
+
+        Cursor cursor = db.query(
+                TABLE_PRODUCTS, // The table to query
+                new String[]{
+                        KEY_PRODUCT_BARCODE,
+                        KEY_PRODUCT_NAME,
+                        KEY_PRODUCT_BRAND,
+                        KEY_PRODUCT_QUANTITY,
+                        KEY_PRODUCT_LOCATION,
+                        KEY_PRODUCT_TAGS,
+                        KEY_PRODUCT_IMAGE
+                },
+                KEY_PRODUCT_BARCODE + "=?", // The columns for the WHERE clause
+                new String[]{barcode},      // The values for the WHERE clause
+                null,                       // Don't group the rows
+                null,                       // Don't filter by row groups
+                null                        // The sort order
+        );
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int nameIndex = cursor.getColumnIndex(KEY_PRODUCT_NAME);
+            int brandIndex = cursor.getColumnIndex(KEY_PRODUCT_BRAND);
+            int quantityIndex = cursor.getColumnIndex(KEY_PRODUCT_QUANTITY);
+            int locationIndex = cursor.getColumnIndex(KEY_PRODUCT_LOCATION);
+            int tagsIndex = cursor.getColumnIndex(KEY_PRODUCT_TAGS);
+            int imageIndex = cursor.getColumnIndex(KEY_PRODUCT_IMAGE);
+
+            if (nameIndex != -1 && brandIndex != -1 && quantityIndex != -1 &&
+                    locationIndex != -1 && tagsIndex != -1 && imageIndex != -1) {
+                String name = cursor.getString(nameIndex);
+                String brand = cursor.getString(brandIndex);
+                int quantity = cursor.getInt(quantityIndex);
+                String location = cursor.getString(locationIndex);
+                String tags = cursor.getString(tagsIndex);
+                byte[] imageBytes = cursor.getBlob(imageIndex);
+                Bitmap image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
+                product = new Product(barcode, name, brand, quantity, location, tags, image);
+            }
+        }
+        if (cursor != null) {
+            cursor.close();
+        }
+        return product;
+    }
+
+
+    // Update product details in the database
+    public int updateProduct(Product product) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_PRODUCT_NAME, product.getName());
+        values.put(KEY_PRODUCT_BRAND, product.getBrand());
+        values.put(KEY_PRODUCT_QUANTITY, product.getQuantityInStock());
+        values.put(KEY_PRODUCT_LOCATION, product.getWarehouseLocation());
+        values.put(KEY_PRODUCT_TAGS, product.getTags());
+        if (product.getImage() != null) {
+            values.put(KEY_PRODUCT_IMAGE, getBitmapAsByteArray(product.getImage()));
+        }
+
+        // Updating product details for given barcode
+        return db.update(TABLE_PRODUCTS, values, KEY_PRODUCT_BARCODE + " = ?",
+                new String[]{String.valueOf(product.getBarcode())});
+    }
+
+    // Delete a product from the database
+    public void deleteProduct(String barcode) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_PRODUCTS, KEY_PRODUCT_BARCODE + " = ?", new String[]{barcode});
+    }
+
+    // List all products in the database
+    public List<Product> getAllProducts() {
+        List<Product> productList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_PRODUCTS, null);
+
+        if (cursor.moveToFirst()) {
+            int barcodeIndex = cursor.getColumnIndex(KEY_PRODUCT_BARCODE);
+            int nameIndex = cursor.getColumnIndex(KEY_PRODUCT_NAME);
+            int brandIndex = cursor.getColumnIndex(KEY_PRODUCT_BRAND);
+            int quantityIndex = cursor.getColumnIndex(KEY_PRODUCT_QUANTITY);
+            int locationIndex = cursor.getColumnIndex(KEY_PRODUCT_LOCATION);
+            int tagsIndex = cursor.getColumnIndex(KEY_PRODUCT_TAGS);
+            int imageIndex = cursor.getColumnIndex(KEY_PRODUCT_IMAGE);
+
+            if (barcodeIndex != -1 && nameIndex != -1 && brandIndex != -1 &&
+                    quantityIndex != -1 && locationIndex != -1 && tagsIndex != -1 && imageIndex != -1) {
+                do {
+                    String barcode = cursor.getString(barcodeIndex);
+                    String name = cursor.getString(nameIndex);
+                    String brand = cursor.getString(brandIndex);
+                    int quantity = cursor.getInt(quantityIndex);
+                    String location = cursor.getString(locationIndex);
+                    String tags = cursor.getString(tagsIndex);
+                    byte[] imageBytes = cursor.getBlob(imageIndex);
+                    Bitmap image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
+                    Product product = new Product(barcode, name, brand, quantity, location, tags, image);
+                    productList.add(product);
+                } while (cursor.moveToNext());
+            }
+        }
+        cursor.close();
+        return productList;
+    }
+
+
+
+
+    //--------------------- Utility methods-----------------------------------------------
+
+    // utility method to hash password
+    private String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+
+    // Utility method to convert bitmap to byte array for BLOB storage
+    private static byte[] getBitmapAsByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, outputStream);
+        return outputStream.toByteArray();
+    }
 
 
 }
