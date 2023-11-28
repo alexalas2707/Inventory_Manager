@@ -20,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Database Info
     // Database Info
     private static final String DATABASE_NAME = "inventoryManagerDatabase";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     // Table Names
     private static final String TABLE_USERS = "user_data";
@@ -91,7 +91,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_USER_NAME, user.getName());
         values.put(KEY_USER_LASTNAME, user.getLastname());
         values.put(KEY_USER_USERNAME, user.getUsername());
-        values.put(KEY_USER_PASSWORD, hashPassword(user.getPassword())); // Hash the password
+        values.put(KEY_USER_PASSWORD, user.getPassword()); // Hash the password
 
         long id = db.insert(TABLE_USERS, null, values);
         if (id == -1) {
