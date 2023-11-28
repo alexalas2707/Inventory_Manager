@@ -1,7 +1,6 @@
 package com.example.inventorymanager;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -34,20 +33,110 @@ public class AddInventoryFragment extends Fragment {
     private static final int IMAGE_PICK_REQUEST = 101;
     private static final int IMAGE_CAPTURE_REQUEST = 102;
 
+    private ImageView imageViewProduct;
+    private EditText editTextProductName, editTextBarcodeNumber, editTextProductBrand, editTextLocation, editTextTags;
+    private BarcodeScannerHelper barcodeScannerHelper;
+
+    public AddInventoryFragment() {
+        // Required empty public constructor
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_add_inventory, container, false);
+        initializeViews(view);
+        setListeners(view);
+        return view;
+    }
+
+
+    private void initializeViews(View view) {
+        barcodeScannerHelper = new BarcodeScannerHelper(this);
+        imageViewProduct = view.findViewById(R.id.imageViewProduct);
+        editTextProductName = view.findViewById(R.id.editTextProductName);
+        editTextBarcodeNumber = view.findViewById(R.id.editTextBarcodeNumber);
+        editTextProductBrand = view.findViewById(R.id.editTextProductBrand);
+        editTextLocation = view.findViewById(R.id.editTextLocation);
+        editTextTags = view.findViewById(R.id.editTextTags);
+    }
+
+    private void setListeners(View view) {
+        Button buttonSaveProduct = view.findViewById(R.id.buttonSaveProduct);
+        buttonSaveProduct.setOnClickListener(v -> saveProduct());
+
+        Button addImageButton = view.findViewById(R.id.buttonAddImage);
+        addImageButton.setOnClickListener(v -> checkPermissions());
+
+        editTextBarcodeNumber.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP &&
+                    event.getRawX() >= (editTextBarcodeNumber.getRight() - editTextBarcodeNumber.getCompoundDrawables()[2].getBounds().width())) {
+                barcodeScannerHelper.startBarcodeScan();
+                return true;
+            }
+            return false;
+        });
+    }
+
+
+    private void saveProduct() {
+        String name = editTextProductName.getText().toString().trim();
+        String barcode = editTextBarcodeNumber.getText().toString().trim();
+        String brand = editTextProductBrand.getText().toString().trim();
+        String location = editTextLocation.getText().toString().trim();
+        String tags = editTextTags.getText().toString().trim();
+        Bitmap image = getBitmapFromImageView(imageViewProduct);
+
+        if (!name.isEmpty() && !barcode.isEmpty()) {
+            DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
+            Product existingProduct = databaseHelper.getProductByBarcode(barcode);
+
+            if (existingProduct != null) {
+                // Product exists, increment quantity
+                int newQuantity = existingProduct.getQuantityInStock() + 1; // Increment by 1 or desired amount
+                existingProduct.setQuantityInStock(newQuantity);
+                databaseHelper.updateProduct(existingProduct);
+                Toast.makeText(getContext(), "Product quantity updated successfully", Toast.LENGTH_SHORT).show();
+            } else {
+                // Product does not exist, add new product with initial quantity
+                Product newProduct = new Product(barcode, name, brand, 1, location, tags, image); // Start with a quantity of 1
+                databaseHelper.addProduct(newProduct);
+                Toast.makeText(getContext(), "New product added successfully", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(getContext(), "Product name and barcode are required", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private Bitmap getBitmapFromImageView(ImageView imageView) {
+        imageView.setDrawingCacheEnabled(true);
+        imageView.buildDrawingCache();
+        return imageView.getDrawingCache();
+    }
 
     private void checkPermissions() {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST);
         } else {
             showImagePickDialog();
         }
     }
 
+    private void showImagePickDialog() {
+        new AlertDialog.Builder(getActivity())
+                .setTitle("Choose Image Source")
+                .setItems(new String[]{"Camera", "Gallery"}, (dialogInterface, i) -> {
+                    Intent intent = i == 0 ? new Intent(MediaStore.ACTION_IMAGE_CAPTURE) :
+                            new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(intent, i == 0 ? IMAGE_CAPTURE_REQUEST : IMAGE_PICK_REQUEST);
+                })
+                .show();
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSIONS_REQUEST && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             showImagePickDialog();
         } else {
@@ -55,98 +144,23 @@ public class AddInventoryFragment extends Fragment {
         }
     }
 
-    private void showImagePickDialog() {
-        String[] options = {"Camera", "Gallery"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Choose Image Source")
-                .setItems(options, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (i == 0) {
-                            // Camera option
-                            Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                            startActivityForResult(takePicture, IMAGE_CAPTURE_REQUEST);
-                        } else {
-                            // Gallery option
-                            Intent pickPhoto = new Intent(Intent.ACTION_PICK,
-                                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                            startActivityForResult(pickPhoto, IMAGE_PICK_REQUEST);
-                        }
-                    }
-                }).show();
-    }
-
-
-    public AddInventoryFragment() {
-        // Required empty public constructor
-    }
-
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_add_inventory, container, false);
-
-
-        // Initialize BarcodeScannerHelper with the current fragment
-        BarcodeScannerHelper barcodeScannerHelper = new BarcodeScannerHelper(this);
-
-        EditText editTextBarcodeNumber = view.findViewById(R.id.editTextBarcodeNumber);
-
-        // Set up the Add Image button
-        Button addImageButton = view.findViewById(R.id.buttonAddImage);
-        addImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkPermissions();
-            }
-        });
-
-        editTextBarcodeNumber.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (event.getRawX() >= (editTextBarcodeNumber.getRight() - editTextBarcodeNumber.getCompoundDrawables()[2].getBounds().width())) {
-                        // Start scanning
-                        barcodeScannerHelper.startBarcodeScan(); // corrected method name
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
-
-
-        return view;
-    }
-
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
-            ImageView imageViewProduct = getView().findViewById(R.id.imageViewProduct);
-
-            if (requestCode == IMAGE_PICK_REQUEST && data != null && data.getData() != null) {
-                Uri selectedImage = data.getData();
-                imageViewProduct.setImageURI(selectedImage);
-            } else if (requestCode == IMAGE_CAPTURE_REQUEST && data != null) {
-                Bundle extras = data.getExtras();
-                Bitmap imageBitmap = (Bitmap) extras.get("data");
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            if (requestCode == IMAGE_PICK_REQUEST && data.getData() != null) {
+                imageViewProduct.setImageURI(data.getData());
+            } else if (requestCode == IMAGE_CAPTURE_REQUEST) {
+                Bitmap imageBitmap = (Bitmap) data.getExtras().get("data");
                 imageViewProduct.setImageBitmap(imageBitmap);
             }
         }
+
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (result != null) {
-            if (result.getContents() == null) {
-                Toast.makeText(getActivity(), "Cancelled", Toast.LENGTH_LONG).show();
-            } else {
-                // Put the scan result into the EditText
-                EditText editTextBarcodeNumber = getView().findViewById(R.id.editTextBarcodeNumber);
-                editTextBarcodeNumber.setText(result.getContents());
-            }
+        if (result != null && result.getContents() != null) {
+            editTextBarcodeNumber.setText(result.getContents());
         }
     }
-
-
 }
+
+
 

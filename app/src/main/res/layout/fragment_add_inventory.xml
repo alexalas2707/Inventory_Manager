@@ -59,17 +59,7 @@
         android:textColorHint="@color/app_grey"
         android:textColor="@color/black"/>
 
-    <EditText
-        android:id="@+id/editTextQuantity"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Quantity"
-        android:inputType="number"
-        android:background="@drawable/app_input"
-        android:layout_marginTop="5dp"
-        android:padding="5dp"
-        android:textColorHint="@color/app_grey"
-        android:textColor="@color/black"/>
+
 
     <EditText
         android:id="@+id/editTextLocation"

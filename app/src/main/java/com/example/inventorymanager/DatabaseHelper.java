@@ -20,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Database Info
     // Database Info
     private static final String DATABASE_NAME = "inventoryManagerDatabase";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Table Names
     private static final String TABLE_USERS = "user_data";
@@ -41,6 +41,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_PRODUCT_LOCATION = "warehouse_location";
     private static final String KEY_PRODUCT_TAGS = "tags";
     private static final String KEY_PRODUCT_IMAGE = "image"; // For storing image as BLOB
+
 
 
     public DatabaseHelper(Context context) {
@@ -76,8 +77,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion != newVersion) {
-            // Simple database upgrade policy for the sake of the example
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCTS);
             onCreate(db);
         }
     }
@@ -199,6 +200,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+    public void addProduct(Product product) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_PRODUCT_BARCODE, product.getBarcode());
+        values.put(KEY_PRODUCT_NAME, product.getName());
+        values.put(KEY_PRODUCT_BRAND, product.getBrand());
+        values.put(KEY_PRODUCT_QUANTITY, product.getQuantityInStock());
+        values.put(KEY_PRODUCT_LOCATION, product.getWarehouseLocation());
+        values.put(KEY_PRODUCT_TAGS, product.getTags());
+        // Assuming you have a method to convert Bitmap to byte array
+        values.put(KEY_PRODUCT_IMAGE, getBitmapAsByteArray(product.getImage()));
+
+        db.insert(TABLE_PRODUCTS, null, values);
+        db.close();
+    }
+
+
     public Product getProductByBarcode(String barcode) {
         SQLiteDatabase db = this.getReadableDatabase();
         Product product = null;
@@ -307,6 +326,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return productList;
+    }
+
+    // Method to get the quantity of a product by its name
+    public int getProductQuantity(String productName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int quantity = 0;
+
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + TABLE_PRODUCTS +
+                " WHERE " + KEY_PRODUCT_NAME + "=?", new String[]{productName});
+
+        if (cursor != null && cursor.moveToFirst()) {
+            quantity = cursor.getInt(0); // The count is in the first column
+            cursor.close();
+        }
+
+        return quantity;
     }
 
 
