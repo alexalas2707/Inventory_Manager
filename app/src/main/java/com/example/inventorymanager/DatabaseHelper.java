@@ -20,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Database Info
     // Database Info
     private static final String DATABASE_NAME = "inventoryManagerDatabase";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 6;
 
     // Table Names
     private static final String TABLE_USERS = "user_data";
@@ -344,6 +344,75 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return quantity;
     }
 
+    // Method to get distinct product names from the database
+    public List<String> getDistinctProductNames() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<String> productNames = new ArrayList<>();
+
+        String query = "SELECT DISTINCT " + KEY_PRODUCT_NAME + " FROM " + TABLE_PRODUCTS;
+        Cursor cursor = db.rawQuery(query, null);
+
+        // Get the index of the column first
+        int nameIndex = cursor.getColumnIndex(KEY_PRODUCT_NAME);
+
+        // Check if the index is valid
+        if (nameIndex != -1 && cursor.moveToFirst()) {
+            do {
+                productNames.add(cursor.getString(nameIndex));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return productNames;
+    }
+
+
+
+    // Method to get a product by its name
+    public Product getProductByName(String productName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Product product = null;
+
+        String[] projection = {
+                KEY_PRODUCT_BARCODE,
+                KEY_PRODUCT_NAME,
+                KEY_PRODUCT_BRAND,
+                // ... other columns to be needed
+                KEY_PRODUCT_IMAGE
+        };
+
+        Cursor cursor = db.query(
+                TABLE_PRODUCTS,
+                projection,
+                KEY_PRODUCT_NAME + "=?",
+                new String[]{productName},
+                null,
+                null,
+                null,
+                "1" // Limit 1 since we only want one product with this name
+        );
+
+        if (cursor.moveToFirst()) {
+            int barcodeIndex = cursor.getColumnIndex(KEY_PRODUCT_BARCODE);
+            int nameIndex = cursor.getColumnIndex(KEY_PRODUCT_NAME);
+            int brandIndex = cursor.getColumnIndex(KEY_PRODUCT_BRAND);
+            int imageIndex = cursor.getColumnIndex(KEY_PRODUCT_IMAGE);
+
+            if (barcodeIndex != -1 && nameIndex != -1 && brandIndex != -1 && imageIndex != -1) {
+                String barcode = cursor.getString(barcodeIndex);
+                String name = cursor.getString(nameIndex);
+                String brand = cursor.getString(brandIndex);
+                byte[] imageBytes = cursor.getBlob(imageIndex);
+                Bitmap image = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+
+                // Assuming Product constructor takes these parameters, and quantity will be set later
+                product = new Product(barcode, name, brand, 0, null, null, image);
+            }
+        }
+
+        cursor.close();
+        return product;
+    }
+
 
 
 
@@ -363,4 +432,3 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 }
-
