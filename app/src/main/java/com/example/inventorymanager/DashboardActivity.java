@@ -17,7 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.navigation.NavigationView;
 
-public class DashboardActivity extends AppCompatActivity implements BarcodeScanningFragment.OnBarcodeScannedListener {
+public class DashboardActivity extends AppCompatActivity implements BarcodeScanningFragment.OnBarcodeScannedListener,ExportInventoryFragment.OnExportActionListener {
 
     private DrawerLayout drawerLayout;
     private DatabaseHelper databaseHelper;
@@ -43,7 +43,6 @@ public class DashboardActivity extends AppCompatActivity implements BarcodeScann
         findViewById(R.id.frameLayoutAdd).setOnClickListener(v -> showFragment(new AddInventoryFragment()));
         findViewById(R.id.frameLayoutProductList).setOnClickListener(v -> showFragment(new InventoryListFragment()));
         findViewById(R.id.frameLayoutAlerts).setOnClickListener(v -> showFragment(new AlertsFragment()));
-        findViewById(R.id.frameLayoutProductCategories).setOnClickListener(v -> showFragment(new ProductCategoriesFragment()));
         findViewById(R.id.frameLayoutExport).setOnClickListener(v -> showFragment(new ExportInventoryFragment()));
         findViewById(R.id.frameLayoutSettings).setOnClickListener(v -> showFragment(new SettingsFragment()));
         findViewById(R.id.frameLayoutHelp).setOnClickListener(v -> showFragment(new HelpFragment()));
@@ -60,8 +59,6 @@ public class DashboardActivity extends AppCompatActivity implements BarcodeScann
                 showFragment(new InventoryListFragment());
             } else if (itemId == R.id.nav_add_inventory) {
                 showFragment(new AddInventoryFragment());
-            } else if (itemId == R.id.nav_product_categories) {
-                showFragment(new ProductCategoriesFragment());
             } else if (itemId == R.id.nav_barcode_scanning) {
                 showFragment(new BarcodeScanningFragment());
             } else if (itemId == R.id.nav_export_inventory) {
@@ -142,6 +139,11 @@ public class DashboardActivity extends AppCompatActivity implements BarcodeScann
                 .replace(R.id.fragment_container, addInventoryFragment)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    @Override
+    public void onBackToDashboard() {
+        showDashboard();
     }
 
 }

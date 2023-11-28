@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -72,9 +73,25 @@ public class BarcodeScanningFragment extends Fragment {
     }
 
     private void takeOutItemFromWarehouse() {
-        // Logic to remove item from warehouse
-        // Update the database as needed
+        // Check if product exists
+        Product product = databaseHelper.getProductByBarcode(scannedBarcode);
+        if (product != null) {
+            // Delete the product from the database
+            databaseHelper.deleteProduct(scannedBarcode);
+
+            // Update the UI to reflect the product removal
+            scanResultTextView.setText("Item removed from warehouse.");
+            buttonTakeOutItem.setVisibility(View.GONE);
+            buttonAddNewItem.setVisibility(View.VISIBLE); // Show add button in case the user wants to re-add it
+            scanImageView.setImageResource(R.drawable.logo); // Reset image to default or hide it
+
+            Toast.makeText(getContext(), "Item removed from warehouse", Toast.LENGTH_SHORT).show();
+        } else {
+            // Handle the case where the product does not exist in the database
+            Toast.makeText(getContext(), "Product not found in warehouse", Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

@@ -13,10 +13,7 @@
             android:id="@+id/nav_add_inventory"
             android:icon="@drawable/ic_add"
             android:title="Add Inventory" />
-        <item
-            android:id="@+id/nav_product_categories"
-            android:icon="@drawable/ic_categories"
-            android:title="Product Categories" />
+
         <item
             android:id="@+id/nav_barcode_scanning"
             android:icon="@drawable/ic_scan"
