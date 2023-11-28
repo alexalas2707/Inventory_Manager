@@ -17,7 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.navigation.NavigationView;
 
-public class DashboardActivity extends AppCompatActivity {
+public class DashboardActivity extends AppCompatActivity implements BarcodeScanningFragment.OnBarcodeScannedListener {
 
     private DrawerLayout drawerLayout;
     private DatabaseHelper databaseHelper;
@@ -126,4 +126,22 @@ public class DashboardActivity extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    public void onBarcodeScanned(String barcode) {
+        //replace the current fragment with AddInventoryFragment
+        AddInventoryFragment addInventoryFragment = new AddInventoryFragment();
+
+        // Pass barcode data to AddInventoryFragment
+        Bundle args = new Bundle();
+        args.putString("barcode", barcode);
+        addInventoryFragment.setArguments(args);
+
+        // Replace the fragment
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, addInventoryFragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
 }

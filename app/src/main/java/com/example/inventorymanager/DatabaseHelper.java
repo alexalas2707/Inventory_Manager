@@ -83,7 +83,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    // Insert a post into the database
+
     // Insert a user into the database
     public void addUser(User user) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -91,7 +91,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_USER_NAME, user.getName());
         values.put(KEY_USER_LASTNAME, user.getLastname());
         values.put(KEY_USER_USERNAME, user.getUsername());
-        values.put(KEY_USER_PASSWORD, user.getPassword()); // Hash the password
+        values.put(KEY_USER_PASSWORD, user.getPassword());
 
         long id = db.insert(TABLE_USERS, null, values);
         if (id == -1) {

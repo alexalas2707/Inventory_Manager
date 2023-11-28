@@ -44,7 +44,20 @@ public class AddInventoryFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_add_inventory, container, false);
+
+        editTextBarcodeNumber = view.findViewById(R.id.editTextBarcodeNumber);
+
+        // Retrieve barcode from arguments
+        if (getArguments() != null) {
+            String barcode = getArguments().getString("barcode");
+            if (barcode != null) {
+                editTextBarcodeNumber.setText(barcode);
+            }
+        }
+
+
         initializeViews(view);
         setListeners(view);
         return view;
