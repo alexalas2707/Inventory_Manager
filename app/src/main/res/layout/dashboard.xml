@@ -55,7 +55,8 @@
                     android:src="@drawable/ic_search"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    android:padding="16dp" />
+                    android:padding="16dp"
+                    app:tint="@color/white"/>
 
 
                 <GridLayout
@@ -252,38 +253,6 @@
                             android:layout_marginTop="75dp" />
 
                     </FrameLayout>
-
-                    <FrameLayout
-                        android:id="@+id/frameLayoutHelp"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="8dp"
-                        android:padding="10dp"
-                        android:layout_rowWeight="1"
-                        android:layout_columnWeight="1"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?attr/selectableItemBackground"
-                        android:background="@drawable/app_input">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_help"
-                            android:contentDescription="help button"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal|bottom"
-                            android:text="Help"
-                            android:layout_marginTop="75dp" />
-
-                    </FrameLayout>
-
-
-
 
                 </GridLayout>
 

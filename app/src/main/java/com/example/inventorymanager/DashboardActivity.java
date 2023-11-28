@@ -45,7 +45,6 @@ public class DashboardActivity extends AppCompatActivity implements BarcodeScann
         findViewById(R.id.frameLayoutAlerts).setOnClickListener(v -> showFragment(new AlertsFragment()));
         findViewById(R.id.frameLayoutExport).setOnClickListener(v -> showFragment(new ExportInventoryFragment()));
         findViewById(R.id.frameLayoutSettings).setOnClickListener(v -> showFragment(new SettingsFragment()));
-        findViewById(R.id.frameLayoutHelp).setOnClickListener(v -> showFragment(new HelpFragment()));
     }
 
     private void setupNavigationDrawer() {

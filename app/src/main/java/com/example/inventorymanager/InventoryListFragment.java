@@ -49,11 +49,9 @@ public class InventoryListFragment extends Fragment{
 
     private void fetchInventoryData() {
         new Thread(() -> {
-            // Fetch distinct product names
             List<String> productNames = databaseHelper.getDistinctProductNames();
             List<Product> tempProductList = new ArrayList<>();
 
-            // For each product name, fetch a product and its quantity
             for (String name : productNames) {
                 Product product = databaseHelper.getProductByName(name);
                 if (product != null) {
@@ -63,7 +61,6 @@ public class InventoryListFragment extends Fragment{
                 }
             }
 
-            // Make sure to run UI updates on the main thread
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
                     productList.clear();
@@ -73,6 +70,7 @@ public class InventoryListFragment extends Fragment{
             }
         }).start();
     }
+
 
 
 }

@@ -59,7 +59,7 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.View
             imageViewProduct.setImageBitmap(product.getImage()); // If you have an ImageView in the layout
             textViewProductName.setText(product.getName());
             textViewBrand.setText("Brand: "+product.getBrand());
-            textViewQuantity.setText("Quantity:"+String.valueOf(product.getQuantityInStock()));
+            textViewQuantity.setText("Quantity: "+String.valueOf(product.getQuantityInStock()));
         }
     }
 }
